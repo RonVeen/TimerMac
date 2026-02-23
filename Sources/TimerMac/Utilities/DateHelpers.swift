@@ -22,6 +22,26 @@ enum DateFormatters {
     }
 }
 
+enum ActivityDurationFormatter {
+    static func totalText(for activities: [Activity], referenceDate: Date = Date()) -> String {
+        let totalSeconds = activities.reduce(0.0) { partial, activity in
+            let end = activity.endTime ?? (activity.status == .active ? referenceDate : activity.startTime)
+            let delta = max(0, end.timeIntervalSince(activity.startTime))
+            return partial + delta
+        }
+
+        let totalMinutes = Int(totalSeconds / 60)
+        let hours = totalMinutes / 60
+        let minutes = totalMinutes % 60
+
+        if hours > 0 {
+            return "\(hours)h \(minutes)m (\(totalMinutes) min)"
+        } else {
+            return "\(totalMinutes) min"
+        }
+    }
+}
+
 extension Date {
     func startOfDay(in calendar: Calendar = .current) -> Date {
         calendar.startOfDay(for: self)
