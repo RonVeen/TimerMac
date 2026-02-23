@@ -57,7 +57,10 @@ struct StartActivityView: View {
     }
 
     var body: some View {
-        VStack {
+        VStack(alignment: .leading, spacing: 16) {
+            Text("Start Activity")
+                .font(.headline)
+
             Form {
                 TextField("Description", text: $description)
                 Picker("Type", selection: $type) {
@@ -65,15 +68,15 @@ struct StartActivityView: View {
                         Text(type.displayName).tag(type)
                     }
                 }
-                DatePicker("Start", selection: $startDate)
+                DatePicker("Start", selection: $startDate, displayedComponents: [.date, .hourAndMinute])
                 Toggle("Connect to last activity today", isOn: $connectToPrevious)
                     .help("Uses the previous activity's end time + 1 minute")
             }
-            .frame(minWidth: 420)
+            .frame(width: 420)
 
             HStack {
                 Spacer()
-                Button("Cancel") {
+                Button("Cancel", role: .cancel) {
                     dismiss()
                 }
                 Button("Start") {
@@ -83,9 +86,10 @@ struct StartActivityView: View {
                     dismiss()
                 }
                 .buttonStyle(.borderedProminent)
+                .keyboardShortcut(.defaultAction)
                 .disabled(!isDescriptionValid)
             }
-            .padding([.horizontal, .bottom])
         }
+        .padding()
     }
 }
