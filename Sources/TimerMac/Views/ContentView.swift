@@ -172,14 +172,18 @@ struct ActivityEditorSheet: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
+        VStack(spacing: 24) {
             Text(title)
                 .font(.headline)
+            
             ActivityEditorView(state: $state, allowStatusChange: allowStatusChange)
-                .frame(width: 420)
-            HStack {
-                Spacer()
+                .padding(.horizontal)
+
+            HStack(spacing: 16) {
                 Button("Cancel") { dismiss() }
+                    .buttonStyle(.bordered)
+                    .clipShape(Capsule())
+
                 Button(primaryButtonLabel) {
                     state.description = state.description.trimmed()
                     guard !state.description.isBlank else { return }
@@ -187,10 +191,12 @@ struct ActivityEditorSheet: View {
                     dismiss()
                 }
                 .buttonStyle(.borderedProminent)
+                .clipShape(Capsule())
                 .disabled(state.description.isBlank)
             }
         }
         .padding()
+        .frame(width: 450)
     }
 }
 
