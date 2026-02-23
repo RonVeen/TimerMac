@@ -69,7 +69,7 @@ struct JobManagementView: View {
                 viewModel.deleteSelectedJob()
             }
         } message: { job in
-            Text("Are you sure you want to delete job #\(job.id)?")
+            Text("Are you sure you want to delete job '\(job.description)'?")
         }
     }
 }
