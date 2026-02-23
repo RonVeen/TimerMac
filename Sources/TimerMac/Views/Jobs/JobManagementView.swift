@@ -5,10 +5,11 @@ struct JobManagementView: View {
     let startJob: (Job) -> Void
 
     @State private var newJobDescription: String = ""
-    @State private var jobSelection: Int64?
+    @State private var jobSelection = Set<Int64>()
+    @State private var showDeleteConfirmation = false
 
     private var selectedJob: Job? {
-        guard let id = jobSelection else { return nil }
+        guard let id = jobSelection.first else { return nil }
         return viewModel.jobs.first { $0.id == id }
     }
 
@@ -28,19 +29,9 @@ struct JobManagementView: View {
                 .disabled(newJobDescription.isBlank)
             }
 
-            List(viewModel.jobs, id: \.id) { job in
-                HStack {
+            Table(viewModel.jobs, selection: $jobSelection) {
+                TableColumn("Description") { job in
                     Text(job.description)
-                    Spacer()
-                    if jobSelection == job.id {
-                        Image(systemName: "checkmark")
-                            .foregroundColor(.accentColor)
-                    }
-                }
-                .contentShape(Rectangle())
-                .onTapGesture {
-                    jobSelection = job.id
-                    viewModel.selectedJobID = job.id
                 }
             }
             .frame(height: 160)
@@ -51,16 +42,34 @@ struct JobManagementView: View {
                         startJob(job)
                     }
                 }
-                .disabled(selectedJob?.description.isBlank ?? true)
+                .disabled(selectedJob == nil)
 
                 Button("Remove Job") {
-                    viewModel.deleteSelectedJob()
+                    if selectedJob != nil {
+                        showDeleteConfirmation = true
+                    }
                 }
                 .disabled(selectedJob == nil)
             }
         }
         .onChange(of: viewModel.selectedJobID) { newValue in
-            jobSelection = newValue
+            if let newValue {
+                jobSelection = [newValue]
+            } else {
+                jobSelection.removeAll()
+            }
+        }
+        .onChange(of: jobSelection) { newSelection in
+            viewModel.selectedJobID = newSelection.first
+        }
+        .alert("Delete Job",
+               isPresented: $showDeleteConfirmation,
+               presenting: selectedJob) { job in
+            Button("Delete", role: .destructive) {
+                viewModel.deleteSelectedJob()
+            }
+        } message: { job in
+            Text("Are you sure you want to delete job #\(job.id)?")
         }
     }
 }

@@ -41,33 +41,34 @@ struct SettingsView: View {
 
     var body: some View {
         Form {
-            Picker("Default Activity Type", selection: $configuration.defaultActivityType) {
-                ForEach(ActivityType.allCases) { type in
-                    Text(type.displayName).tag(type)
+            Section(header: Text("Defaults").font(.headline)) {
+                Picker("Default Activity Type", selection: $configuration.defaultActivityType) {
+                    ForEach(ActivityType.allCases) { type in
+                        Text(type.displayName).tag(type)
+                    }
+                }
+
+                Stepper(value: $configuration.defaultDurationMinutes, in: 5...480, step: 5) {
+                    Text("Default Duration: \(configuration.defaultDurationMinutes) minutes")
+                }
+
+                TextField("Default Start Time (HH:mm)", text: $configuration.defaultStartTime)
+                    .textFieldStyle(.roundedBorder)
+            }
+
+            Section(header: Text("Exporting").font(.headline)) {
+                TextField("CSV Delimiter", text: $configuration.csvDelimiter)
+                    .textFieldStyle(.roundedBorder)
+                    .frame(maxWidth: 140)
+            }
+
+            Section(header: Text("Time").font(.headline)) {
+                Picker("Rounding", selection: $configuration.roundingMinutes) {
+                    ForEach(roundingOptions, id: \.self) { value in
+                        Text(value == 0 ? "No rounding" : "\(value) minutes").tag(value)
+                    }
                 }
             }
-
-            Stepper(value: $configuration.defaultDurationMinutes, in: 5...480, step: 5) {
-                Text("Default Duration: \(configuration.defaultDurationMinutes) minutes")
-            }
-
-            Picker("Rounding", selection: Binding(get: {
-                configuration.roundingMinutes
-            }, set: { newValue in
-                configuration.roundingMinutes = newValue
-            })) {
-                ForEach(roundingOptions, id: \.self) { value in
-                    Text(value == 0 ? "No rounding" : "\(value) minutes").tag(value)
-                }
-            }
-
-            TextField("CSV Delimiter", text: $configuration.csvDelimiter)
-                .textFieldStyle(.roundedBorder)
-                .frame(maxWidth: 140)
-
-            TextField("Default Start Time (HH:mm)", text: $configuration.defaultStartTime)
-                .textFieldStyle(.roundedBorder)
-                .frame(maxWidth: 180)
         }
         .padding()
     }

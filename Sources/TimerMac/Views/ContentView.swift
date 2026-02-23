@@ -22,12 +22,36 @@ struct ContentView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            filterHeader
+            FilterHeaderView(filterChoice: $filterChoice,
+                             specificDate: $specificDate,
+                             fromDate: $fromDate,
+                             rangeStart: $rangeStart,
+                             rangeEnd: $rangeEnd,
+                             activeActivity: viewModel.activeActivity,
+                             onRefresh: { viewModel.refreshActivities() })
             ActivityListView(activities: viewModel.activities,
                              selection: $viewModel.selectedActivityID)
                 .frame(minHeight: 280)
 
-            activityActions
+            ActivityActionsView(viewModel: viewModel,
+                                onStart: { activeSheet = .start(description: "") },
+                                onManual: { activeSheet = .manual },
+                                onEdit: {
+                                    if let activity = viewModel.selectedActivity {
+                                        activeSheet = .edit(activity)
+                                    }
+                                },
+                                onCopy: {
+                                    if let activity = viewModel.selectedActivity {
+                                        activeSheet = .copy(activity)
+                                    }
+                                },
+                                onExport: {
+                                    if let data = viewModel.exportData() {
+                                        exportDocument = CSVDocument(data: data)
+                                        isExporting = true
+                                    }
+                                })
             if let info = viewModel.infoMessage {
                 Text(info)
                     .font(.footnote)
@@ -107,105 +131,11 @@ struct ContentView: View {
             editorState = viewModel.defaultActivityState()
             applyFilterChoice()
         }
-    }
-
-    private var filterHeader: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Picker("Filter", selection: $filterChoice) {
-                    ForEach(FilterChoice.allCases, id: \.self) { choice in
-                        Text(choice.title).tag(choice)
-                    }
-                }
-                .pickerStyle(.segmented)
-                Spacer()
-                if let active = viewModel.activeActivity {
-                    Text("Active: #\(active.id) • \(active.description)")
-                        .font(.subheadline)
-                        .foregroundStyle(.green)
-                } else {
-                    Text("No active activity")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-            }
-
-            HStack {
-                switch filterChoice {
-                case .today, .yesterday, .all:
-                    EmptyView()
-                case .date:
-                    DatePicker("Date", selection: $specificDate, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                        .frame(maxWidth: 250)
-                case .from:
-                    DatePicker("From", selection: $fromDate, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                        .frame(maxWidth: 250)
-                case .range:
-                    DatePicker("Start", selection: $rangeStart, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                    DatePicker("End", selection: $rangeEnd, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                }
-                Spacer()
-                Button("Refresh") { viewModel.refreshActivities() }
-            }
-        }
         .onChange(of: filterChoice) { _ in applyFilterChoice() }
         .onChange(of: specificDate) { _ in if filterChoice == .date { applyFilterChoice() } }
         .onChange(of: fromDate) { _ in if filterChoice == .from { applyFilterChoice() } }
         .onChange(of: rangeStart) { _ in if filterChoice == .range { applyFilterChoice() } }
         .onChange(of: rangeEnd) { _ in if filterChoice == .range { applyFilterChoice() } }
-    }
-
-    private var activityActions: some View {
-        HStack {
-            Button("Start Activity") {
-                activeSheet = .start(description: "")
-            }
-            Button("Stop Active") {
-                viewModel.stopActivity()
-            }
-            .disabled(viewModel.activeActivity == nil)
-
-            Button("Add Completed") {
-                activeSheet = .manual
-            }
-            Button("Edit") {
-                if let activity = viewModel.selectedActivity {
-                    activeSheet = .edit(activity)
-                }
-            }
-            .disabled(viewModel.selectedActivity == nil)
-
-            Button("Copy") {
-                if let activity = viewModel.selectedActivity {
-                    activeSheet = .copy(activity)
-                }
-            }
-            .disabled(viewModel.selectedActivity == nil)
-
-            Button("Restart") {
-                viewModel.restartSelectedActivity()
-            }
-            .disabled(viewModel.selectedActivity == nil)
-
-            Button("Delete") {
-                viewModel.deleteSelectedActivity()
-            }
-            .disabled(viewModel.selectedActivity == nil)
-
-            Spacer()
-
-            Button("Export CSV") {
-                if let data = viewModel.exportData() {
-                    exportDocument = CSVDocument(data: data)
-                    isExporting = true
-                }
-            }
-            .disabled(viewModel.activities.isEmpty)
-        }
     }
 
     private func applyFilterChoice() {
@@ -230,46 +160,6 @@ struct ContentView: View {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyyMMdd_HHmmss"
         return "activities_\(formatter.string(from: Date()))"
-    }
-}
-
-private enum FilterChoice: CaseIterable {
-    case today
-    case yesterday
-    case date
-    case from
-    case range
-    case all
-
-    var title: String {
-        switch self {
-        case .today: return "Today"
-        case .yesterday: return "Yesterday"
-        case .date: return "Specific"
-        case .from: return "From"
-        case .range: return "Range"
-        case .all: return "All"
-        }
-    }
-}
-
-private enum ActivitySheet: Identifiable, Equatable {
-    case start(description: String)
-    case manual
-    case edit(Activity)
-    case copy(Activity)
-
-    var id: String {
-        switch self {
-        case .start: return "start"
-        case .manual: return "manual"
-        case .edit(let activity): return "edit_\(activity.id)"
-        case .copy(let activity): return "copy_\(activity.id)"
-        }
-    }
-
-    static func == (lhs: ActivitySheet, rhs: ActivitySheet) -> Bool {
-        lhs.id == rhs.id
     }
 }
 
