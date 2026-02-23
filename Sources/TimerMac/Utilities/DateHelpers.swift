@@ -68,16 +68,16 @@ extension Date {
     }
 
     func iso8601String() -> String {
-        isoFormatter().string(from: self)
+        Self.isoFormatter().string(from: self)
     }
 
     static func fromISO8601(_ value: String) -> Date? {
         isoFormatter().date(from: value)
     }
-}
 
-private func isoFormatter() -> ISO8601DateFormatter {
-    let formatter = ISO8601DateFormatter()
-    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-    return formatter
+    private static func isoFormatter() -> ISO8601DateFormatter {
+        let formatter = ISO8601DateFormatter()
+        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        return formatter
+    }
 }
