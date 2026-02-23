@@ -13,6 +13,13 @@ struct ActivityListView: View {
                     Text(activity.id == 0 ? "-" : "\(activity.id)")
                         .fontWeight(activity.isRunning ? .bold : .regular)
                 }
+                .width(min: 20, ideal: 30, max: 40)
+                
+                TableColumn("Description") { activity in
+                    Text(activity.description)
+                }
+                .width(min: 100, ideal: 200)
+                
                 TableColumn("Date") { activity in
                     Text(DateFormatters.date().string(from: activity.startTime))
                 }
@@ -35,9 +42,6 @@ struct ActivityListView: View {
                 }
                 TableColumn("Status") { activity in
                     Text(activity.status.displayName)
-                }
-                TableColumn("Description") { activity in
-                    Text(activity.description)
                 }
             }
             Text("Total duration: \(ActivityDurationFormatter.totalText(for: activities))")
