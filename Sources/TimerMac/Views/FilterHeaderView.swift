@@ -6,7 +6,7 @@ struct FilterHeaderView: View {
     @Binding var fromDate: Date
     @Binding var rangeStart: Date
     @Binding var rangeEnd: Date
-    
+
     var activeActivity: Activity?
     let onRefresh: () -> Void
 
@@ -20,15 +20,7 @@ struct FilterHeaderView: View {
                 }
                 .pickerStyle(.segmented)
                 Spacer()
-                if let active = activeActivity {
-                    Text("Active: #\(active.id) • \(active.description)")
-                        .font(.subheadline)
-                        .foregroundStyle(.green)
-                } else {
-                    Text("No active activity")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
+                activeActivityBadge
             }
 
             HStack {
@@ -52,6 +44,27 @@ struct FilterHeaderView: View {
                 Spacer()
                 Button("Refresh", action: onRefresh)
             }
+        }
+    }
+
+    @ViewBuilder
+    private var activeActivityBadge: some View {
+        if let active = activeActivity {
+            HStack(spacing: 6) {
+                Circle()
+                    .fill(.green)
+                    .frame(width: 8, height: 8)
+                Text("#\(active.id) \(active.description)")
+                    .fontWeight(.medium)
+            }
+            .font(.subheadline)
+            .padding(.horizontal, 10)
+            .padding(.vertical, 4)
+            .background(.green.opacity(0.12), in: Capsule())
+        } else {
+            Text("No active activity")
+                .font(.subheadline)
+                .foregroundStyle(.secondary)
         }
     }
 }

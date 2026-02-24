@@ -5,9 +5,7 @@ import SwiftUI
 final class TimerViewModel: ObservableObject {
     @Published private(set) var activities: [Activity] = []
     @Published private(set) var jobs: [Job] = []
-    @Published var filter: ActivityDateFilter = .today {
-        didSet { refreshActivities() }
-    }
+    @Published var filter: ActivityDateFilter = .today
     @Published var selectedActivityID: Int64?
     @Published var selectedJobID: Int64?
     @Published var errorMessage: String?

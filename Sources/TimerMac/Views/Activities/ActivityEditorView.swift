@@ -13,10 +13,7 @@ struct ActivityEditorView: View {
                 }
             }
             DatePicker("Start", selection: $state.startDate, displayedComponents: [.date, .hourAndMinute])
-            Toggle("Specify end time", isOn: $state.includeEnd)
-            if state.includeEnd {
-                DatePicker("End", selection: $state.endDate, displayedComponents: [.date, .hourAndMinute])
-            }
+            DatePicker("End", selection: $state.endDate, displayedComponents: [.date, .hourAndMinute])
             if allowStatusChange {
                 Picker("Status", selection: $state.status) {
                     ForEach(ActivityStatus.allCases) { status in

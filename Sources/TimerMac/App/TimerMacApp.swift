@@ -27,6 +27,9 @@ struct TimerMacApp: App {
             ContentView(viewModel: viewModel)
                 .environmentObject(configuration)
         }
+        .commands {
+            ActionsCommands()
+        }
         Settings {
             SettingsView(configuration: configuration)
                 .padding(24)

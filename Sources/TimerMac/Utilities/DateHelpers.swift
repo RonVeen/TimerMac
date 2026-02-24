@@ -72,12 +72,29 @@ extension Date {
     }
 
     static func fromISO8601(_ value: String) -> Date? {
-        isoFormatter().date(from: value)
+        for formatter in Self.isoFormatters {
+            if let date = formatter.date(from: value) {
+                return date
+            }
+        }
+        return nil
     }
 
-    private static func isoFormatter() -> ISO8601DateFormatter {
-        let formatter = ISO8601DateFormatter()
-        formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        return formatter
+    private static let isoFormatters: [DateFormatter] = {
+        let formats = [
+            "yyyy-MM-dd'T'HH:mm:ss.SSS",
+            "yyyy-MM-dd'T'HH:mm:ss",
+            "yyyy-MM-dd'T'HH:mm"
+        ]
+        return formats.map { format in
+            let formatter = DateFormatter()
+            formatter.dateFormat = format
+            formatter.locale = Locale(identifier: "en_US_POSIX")
+            return formatter
+        }
+    }()
+
+    private static func isoFormatter() -> DateFormatter {
+        isoFormatters[0]
     }
 }

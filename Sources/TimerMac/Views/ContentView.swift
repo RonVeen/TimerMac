@@ -19,6 +19,7 @@ struct ContentView: View {
     @State private var rangeEnd = Date()
     @State private var exportDocument = CSVDocument(data: Data())
     @State private var isExporting = false
+    @State private var showDeleteConfirmation = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -30,7 +31,10 @@ struct ContentView: View {
                              activeActivity: viewModel.activeActivity,
                              onRefresh: { viewModel.refreshActivities() })
             ActivityListView(activities: viewModel.activities,
-                             selection: $viewModel.selectedActivityID)
+                             selection: $viewModel.selectedActivityID,
+                             onDoubleClick: { activity in
+                                 activeSheet = .edit(activity)
+                             })
                 .frame(minHeight: 280)
 
             ActivityActionsView(viewModel: viewModel,
@@ -68,38 +72,7 @@ struct ContentView: View {
         .sheet(item: $activeSheet, onDismiss: {
             editorState = viewModel.defaultActivityState()
         }) { sheet in
-            switch sheet {
-            case .start(let description):
-                StartActivityView(description: description,
-                                  type: configuration.defaultActivityType,
-                                  startDate: configuration.defaultStartDate(for: Date())) { desc, type, startDate, connect in
-                    viewModel.startActivity(description: desc,
-                                            type: type,
-                                            startDate: startDate,
-                                            connectToPrevious: connect)
-                }
-            case .manual:
-                ActivityEditorSheet(title: "Add Completed Activity",
-                                    primaryButtonLabel: "Add",
-                                    state: $editorState,
-                                    allowStatusChange: false) { state in
-                    viewModel.addManualActivity(state: state)
-                }
-            case .edit(let activity):
-                ActivityEditorSheet(title: "Edit Activity",
-                                    primaryButtonLabel: "Save",
-                                    state: $editorState,
-                                    allowStatusChange: true) { state in
-                    viewModel.edit(activity: activity, state: state)
-                }
-            case .copy(let activity):
-                ActivityEditorSheet(title: "Copy Activity",
-                                    primaryButtonLabel: "Save Copy",
-                                    state: $editorState,
-                                    allowStatusChange: false) { state in
-                    viewModel.copy(activity: activity, state: state)
-                }
-            }
+            sheetContent(for: sheet)
         }
         .onChange(of: activeSheet) { newValue in
             guard let sheet = newValue else { return }
@@ -136,6 +109,80 @@ struct ContentView: View {
         .onChange(of: fromDate) { _ in if filterChoice == .from { applyFilterChoice() } }
         .onChange(of: rangeStart) { _ in if filterChoice == .range { applyFilterChoice() } }
         .onChange(of: rangeEnd) { _ in if filterChoice == .range { applyFilterChoice() } }
+        .focusedValue(\.activityActions, ActivityActions(
+            startActivity: { activeSheet = .start(description: "") },
+            stopActivity: { viewModel.stopActivity() },
+            addCompleted: { activeSheet = .manual },
+            editActivity: {
+                if let activity = viewModel.selectedActivity {
+                    activeSheet = .edit(activity)
+                }
+            },
+            copyActivity: {
+                if let activity = viewModel.selectedActivity {
+                    activeSheet = .copy(activity)
+                }
+            },
+            restartActivity: { viewModel.restartSelectedActivity() },
+            deleteActivity: { showDeleteConfirmation = true },
+            exportCSV: {
+                if let data = viewModel.exportData() {
+                    exportDocument = CSVDocument(data: data)
+                    isExporting = true
+                }
+            },
+            hasActiveActivity: viewModel.activeActivity != nil,
+            hasSelectedActivity: viewModel.selectedActivity != nil,
+            hasActivities: !viewModel.activities.isEmpty
+        ))
+        .alert("Delete Activity", isPresented: $showDeleteConfirmation) {
+            Button("Delete", role: .destructive) {
+                viewModel.deleteSelectedActivity()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            if let activity = viewModel.selectedActivity {
+                Text("Delete activity #\(activity.id) \"\(activity.description)\"?")
+            } else {
+                Text("Delete selected activity?")
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func sheetContent(for sheet: ActivitySheet) -> some View {
+        switch sheet {
+        case .start(let description):
+            StartActivityView(description: description,
+                              type: configuration.defaultActivityType,
+                              startDate: configuration.defaultStartDate(for: Date())) { desc, type, startDate, connect in
+                viewModel.startActivity(description: desc,
+                                        type: type,
+                                        startDate: startDate,
+                                        connectToPrevious: connect)
+            }
+        case .manual:
+            ActivityEditorSheet(title: "Add Completed Activity",
+                                primaryButtonLabel: "Add",
+                                state: $editorState,
+                                allowStatusChange: false) { state in
+                viewModel.addManualActivity(state: state)
+            }
+        case .edit(let activity):
+            ActivityEditorSheet(title: "Edit Activity",
+                                primaryButtonLabel: "Save",
+                                state: $editorState,
+                                allowStatusChange: true) { state in
+                viewModel.edit(activity: activity, state: state)
+            }
+        case .copy(let activity):
+            ActivityEditorSheet(title: "Copy Activity",
+                                primaryButtonLabel: "Save Copy",
+                                state: $editorState,
+                                allowStatusChange: false) { state in
+                viewModel.copy(activity: activity, state: state)
+            }
+        }
     }
 
     private func applyFilterChoice() {

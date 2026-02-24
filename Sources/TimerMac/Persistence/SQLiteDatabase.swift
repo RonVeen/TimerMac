@@ -28,13 +28,11 @@ final class SQLiteDatabase {
     private init() {
         let fileManager = FileManager.default
         do {
-            let supportDirectory = try fileManager.url(for: .applicationSupportDirectory,
-                                                       in: .userDomainMask,
-                                                       appropriateFor: nil,
-                                                       create: true)
-            let dbDirectory = supportDirectory.appendingPathComponent("TimerMac", isDirectory: true)
-            try fileManager.createDirectory(at: dbDirectory, withIntermediateDirectories: true)
-            databaseURL = dbDirectory.appendingPathComponent("timer.db")
+            let documentsDirectory = try fileManager.url(for: .documentDirectory,
+                                                        in: .userDomainMask,
+                                                        appropriateFor: nil,
+                                                        create: true)
+            databaseURL = documentsDirectory.appendingPathComponent("timer.db")
         } catch {
             fatalError("Unable to determine database URL: \(error.localizedDescription)")
         }
