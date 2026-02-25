@@ -50,12 +50,7 @@ struct ContentView: View {
                                         activeSheet = .copy(activity)
                                     }
                                 },
-                                onExport: {
-                                    if let data = viewModel.exportData() {
-                                        exportDocument = CSVDocument(data: data)
-                                        isExporting = true
-                                    }
-                                })
+                                onExport: triggerExport)
             if let info = viewModel.infoMessage {
                 Text(info)
                     .font(.footnote)
@@ -88,7 +83,11 @@ struct ContentView: View {
         .fileExporter(isPresented: $isExporting,
                       document: exportDocument,
                       contentType: .commaSeparatedText,
-                      defaultFilename: exportFilename) { _ in }
+                      defaultFilename: exportFilename) { result in
+            if case .success(let url) = result {
+                viewModel.handleExportCompletion(url: url)
+            }
+        }
         .alert("Error", isPresented: Binding(get: {
             viewModel.errorMessage != nil
         }, set: { newValue in
@@ -125,12 +124,7 @@ struct ContentView: View {
             },
             restartActivity: { viewModel.restartSelectedActivity() },
             deleteActivity: { showDeleteConfirmation = true },
-            exportCSV: {
-                if let data = viewModel.exportData() {
-                    exportDocument = CSVDocument(data: data)
-                    isExporting = true
-                }
-            },
+            exportCSV: triggerExport,
             hasActiveActivity: viewModel.activeActivity != nil,
             hasSelectedActivity: viewModel.selectedActivity != nil,
             hasActivities: !viewModel.activities.isEmpty
@@ -146,6 +140,13 @@ struct ContentView: View {
             } else {
                 Text("Delete selected activity?")
             }
+        }
+    }
+
+    private func triggerExport() {
+        if let data = viewModel.exportData() {
+            exportDocument = CSVDocument(data: data)
+            isExporting = true
         }
     }
 

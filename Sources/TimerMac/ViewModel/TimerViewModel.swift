@@ -193,6 +193,10 @@ final class TimerViewModel: ObservableObject {
         }
     }
 
+    func handleExportCompletion(url: URL) {
+        infoMessage = "Exported to \(url.path)"
+    }
+
     func defaultActivityState() -> ActivityEditorState {
         ActivityEditorState.default(configuration: configuration)
     }
