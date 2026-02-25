@@ -58,7 +58,9 @@ final class TimerViewModel: ObservableObject {
 
     func refreshJobs() {
         do {
-            jobs = try jobService.listJobs()
+            jobs = try jobService.listJobs().sorted { lhs, rhs in
+                lhs.description.localizedCaseInsensitiveCompare(rhs.description) == .orderedAscending
+            }
             if let selectedJobID,
                !jobs.contains(where: { $0.id == selectedJobID }) {
                 self.selectedJobID = nil
@@ -175,8 +177,8 @@ final class TimerViewModel: ObservableObject {
     func deleteSelectedJob() {
         guard let id = selectedJob?.id else { return }
         do {
-            try jobService.deleteJob(id: id)
-            refreshJobs()
+        try jobService.deleteJob(id: id)
+        refreshJobs()
         } catch {
             handleError(error)
         }
