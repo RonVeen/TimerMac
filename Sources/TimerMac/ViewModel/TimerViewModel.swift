@@ -199,11 +199,99 @@ final class TimerViewModel: ObservableObject {
         infoMessage = "Exported to \(url.path)"
     }
 
+    func graphSummaries(filter: ActivityDateFilter, referenceDate: Date = Date()) -> [ActivityGraphSummary] {
+        let calendar = Calendar.current
+        let baseDate = baseDate(for: filter, referenceDate: referenceDate)
+        let periods: [(String, DateInterval?)] = [
+            ("Today", calendar.dateInterval(of: .day, for: baseDate)),
+            ("This Week", calendar.dateInterval(of: .weekOfYear, for: baseDate)),
+            ("This Month", calendar.dateInterval(of: .month, for: baseDate))
+        ]
+
+        var summaries: [ActivityGraphSummary] = periods.compactMap { title, interval in
+            guard let interval else { return nil }
+            do {
+                let totals = try activityService.durations(from: interval.start, to: interval.end, reference: baseDate)
+                let segments = totals
+                    .sorted { $0.key.displayName < $1.key.displayName }
+                    .map { ActivityGraphSegment(type: $0.key, minutes: Int($0.value / 60)) }
+                return ActivityGraphSummary(title: title, segments: segments)
+            } catch {
+                handleError(error)
+                return nil
+            }
+        }
+        let needsFallback: Bool
+        switch filter {
+        case .today, .yesterday, .specific:
+            needsFallback = true
+        default:
+            needsFallback = false
+        }
+        if needsFallback {
+            if let index = summaries.firstIndex(where: { $0.title == "Today" }),
+               summaries[index].totalMinutes == 0 {
+                let segments = segmentsFromDisplayedActivities(referenceDate: referenceDate)
+                if !segments.isEmpty {
+                    summaries[index] = ActivityGraphSummary(title: "Today", segments: segments)
+                }
+            }
+        }
+        return summaries
+    }
+
     func defaultActivityState() -> ActivityEditorState {
         ActivityEditorState.default(configuration: configuration)
     }
 
     private func handleError(_ error: Error) {
         errorMessage = error.localizedDescription
+    }
+
+    private func baseDate(for filter: ActivityDateFilter, referenceDate: Date) -> Date {
+        let calendar = Calendar.current
+        switch filter {
+        case .today:
+            return referenceDate
+        case .yesterday:
+            return calendar.date(byAdding: .day, value: -1, to: referenceDate) ?? referenceDate
+        case .specific(let date):
+            return date
+        case .from(let date):
+            return date
+        case .range(let start, _):
+            return start
+        case .all:
+            return referenceDate
+        }
+    }
+
+    private func segmentsFromDisplayedActivities(referenceDate: Date) -> [ActivityGraphSegment] {
+        let totals = activities.reduce(into: [ActivityType: TimeInterval]()) { partial, activity in
+            let end = activity.endTime ?? (activity.status == .active ? referenceDate : activity.startTime)
+            guard end > activity.startTime else { return }
+            partial[activity.activityType, default: 0] += end.timeIntervalSince(activity.startTime)
+        }
+        return totals
+            .sorted { $0.key.displayName < $1.key.displayName }
+            .map { ActivityGraphSegment(type: $0.key, minutes: Int($0.value / 60)) }
+    }
+}
+
+struct ActivityGraphSegment: Identifiable {
+    let id = UUID()
+    let type: ActivityType
+    let minutes: Int
+
+    var color: Color { type.color }
+}
+
+struct ActivityGraphSummary: Identifiable {
+    let id = UUID()
+    let title: String
+    let segments: [ActivityGraphSegment]
+
+    var totalMinutes: Int {
+        segments.reduce(0) { $0 + $1.minutes }
     }
 }

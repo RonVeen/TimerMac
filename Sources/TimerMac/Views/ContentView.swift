@@ -20,6 +20,8 @@ struct ContentView: View {
     @State private var exportDocument = CSVDocument(data: Data())
     @State private var isExporting = false
     @State private var showDeleteConfirmation = false
+    @State private var showGraphPopover = false
+    @State private var graphSummaries: [ActivityGraphSummary] = []
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -50,7 +52,8 @@ struct ContentView: View {
                                         activeSheet = .copy(activity)
                                     }
                                 },
-                                onExport: triggerExport)
+                                onExport: triggerExport,
+                                onGraph: triggerGraph)
             if let info = viewModel.infoMessage {
                 Text(info)
                     .font(.footnote)
@@ -99,6 +102,9 @@ struct ContentView: View {
         } message: {
             Text(viewModel.errorMessage ?? "")
         }
+        .popover(isPresented: $showGraphPopover) {
+            ActivityGraphPopover(summaries: graphSummaries)
+        }
         .onAppear {
             editorState = viewModel.defaultActivityState()
             applyFilterChoice()
@@ -125,6 +131,7 @@ struct ContentView: View {
             restartActivity: { viewModel.restartSelectedActivity() },
             deleteActivity: { showDeleteConfirmation = true },
             exportCSV: triggerExport,
+            showGraph: triggerGraph,
             hasActiveActivity: viewModel.activeActivity != nil,
             hasSelectedActivity: viewModel.selectedActivity != nil,
             hasActivities: !viewModel.activities.isEmpty
@@ -148,6 +155,11 @@ struct ContentView: View {
             exportDocument = CSVDocument(data: data)
             isExporting = true
         }
+    }
+
+    private func triggerGraph() {
+        graphSummaries = viewModel.graphSummaries(filter: viewModel.filter)
+        showGraphPopover = true
     }
 
     @ViewBuilder

@@ -1,4 +1,5 @@
 import Foundation
+import SwiftUI
 
 enum ActivityType: String, CaseIterable, Identifiable, Codable {
     case bug = "BUG"
@@ -22,6 +23,19 @@ enum ActivityType: String, CaseIterable, Identifiable, Codable {
         case .outOfOffice: return "Out of Office"
         case .problem: return "Problem"
         case .support: return "Support"
+        }
+    }
+
+    var color: Color {
+        switch self {
+        case .bug: return .red
+        case .develop: return .blue
+        case .general: return .gray
+        case .infra: return .orange
+        case .meeting: return .purple
+        case .outOfOffice: return .mint
+        case .problem: return Color(red: 0.85, green: 0.65, blue: 0.0)
+        case .support: return .green
         }
     }
 }

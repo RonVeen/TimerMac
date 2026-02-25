@@ -7,6 +7,7 @@ struct ActivityActionsView: View {
     let onEdit: () -> Void
     let onCopy: () -> Void
     let onExport: () -> Void
+    let onGraph: () -> Void
 
     @State private var showDeleteConfirmation = false
 
@@ -49,6 +50,14 @@ struct ActivityActionsView: View {
             .disabled(viewModel.selectedActivity == nil)
 
             Spacer()
+
+            Button {
+                onGraph()
+            } label: {
+                Image(systemName: "chart.pie.fill")
+                    .font(.title3)
+            }
+            .help("Show activity breakdown")
 
             Button("Export CSV", action: onExport)
                 .disabled(viewModel.activities.isEmpty)

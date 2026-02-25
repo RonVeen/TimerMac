@@ -109,6 +109,18 @@ final class ActivityService {
         try repository.findByStatus(.active)
     }
 
+    func durations(from start: Date, to end: Date, reference: Date = Date()) throws -> [ActivityType: TimeInterval] {
+        let activities = try repository.findByDateRange(from: start, to: end)
+        var totals: [ActivityType: TimeInterval] = [:]
+        for activity in activities {
+            let endTime = activity.endTime ?? (activity.status == .active ? reference : activity.startTime)
+            guard endTime > activity.startTime else { continue }
+            let duration = endTime.timeIntervalSince(activity.startTime)
+            totals[activity.activityType, default: 0] += duration
+        }
+        return totals
+    }
+
     private func fetchRange(from: Date, to: Date) throws -> [Activity] {
         let lower = min(from, to)
         let upper = max(from, to)
