@@ -29,6 +29,8 @@ struct ActivityActionsView: View {
             // Secondary actions
             Button("Add Completed", action: onManual)
 
+            Divider().frame(height: 20)
+
             Button("Edit", action: onEdit)
                 .disabled(viewModel.selectedActivity == nil)
 
