@@ -185,7 +185,7 @@ struct ContentView: View {
             ActivityEditorSheet(title: "Edit Activity",
                                 primaryButtonLabel: "Save",
                                 state: $editorState,
-                                allowStatusChange: true) { state in
+                                allowStatusChange: false) { state in
                 viewModel.edit(activity: activity, state: state)
             }
         case .copy(let activity):
