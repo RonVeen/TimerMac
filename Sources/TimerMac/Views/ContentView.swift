@@ -53,7 +53,9 @@ struct ContentView: View {
                                     }
                                 },
                                 onExport: triggerExport,
-                                onGraph: triggerGraph)
+                                onGraph: triggerGraph,
+                                showGraphPopover: $showGraphPopover,
+                                graphSummaries: graphSummaries)
             if let info = viewModel.infoMessage {
                 Text(info)
                     .font(.footnote)
@@ -62,9 +64,23 @@ struct ContentView: View {
 
             Divider()
 
-            JobManagementView(viewModel: viewModel) { job in
-                activeSheet = .start(description: job.description)
-            }
+            JobManagementView(viewModel: viewModel,
+                              startJob: { job in
+                                  activeSheet = .start(description: job.description)
+                              },
+                              addCompleted: { job in
+                                  let now = Date()
+                                  let end = Calendar.current.date(byAdding: .minute,
+                                                                  value: configuration.defaultDurationMinutes,
+                                                                  to: now) ?? now
+                                  editorState = ActivityEditorState(description: job.description,
+                                                                    type: configuration.defaultActivityType,
+                                                                    startDate: now,
+                                                                    endDate: end,
+                                                                    includeEnd: true,
+                                                                    status: .completed)
+                                  activeSheet = .manualFromJob(job)
+                              })
         }
         .padding()
         .sheet(item: $activeSheet, onDismiss: {
@@ -79,6 +95,8 @@ struct ContentView: View {
                 break
             case .manual:
                 editorState = viewModel.defaultActivityState()
+            case .manualFromJob:
+                break // editorState is set in the addCompleted closure before sheet is assigned
             case .edit(let activity), .copy(let activity):
                 editorState = ActivityEditorState.from(activity: activity)
             }
@@ -101,9 +119,6 @@ struct ContentView: View {
             Button("OK", role: .cancel) {}
         } message: {
             Text(viewModel.errorMessage ?? "")
-        }
-        .popover(isPresented: $showGraphPopover) {
-            ActivityGraphPopover(summaries: graphSummaries)
         }
         .onAppear {
             editorState = viewModel.defaultActivityState()
@@ -181,6 +196,13 @@ struct ContentView: View {
                                 allowStatusChange: false) { state in
                 viewModel.addManualActivity(state: state)
             }
+        case .manualFromJob:
+            AddCompletedFromJobView(
+                defaultState: editorState,
+                defaultDurationMinutes: configuration.defaultDurationMinutes,
+                latestEndTime: { viewModel.latestActivityEndTime(on: Date()) },
+                onSubmit: { state in viewModel.addManualActivity(state: state) }
+            )
         case .edit(let activity):
             ActivityEditorSheet(title: "Edit Activity",
                                 primaryButtonLabel: "Save",
@@ -204,6 +226,8 @@ struct ContentView: View {
             viewModel.filter = .today
         case .yesterday:
             viewModel.filter = .yesterday
+        case .week:
+            viewModel.filter = .week
         case .date:
             viewModel.filter = .specific(specificDate)
         case .from:

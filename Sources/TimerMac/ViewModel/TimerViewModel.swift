@@ -128,6 +128,10 @@ final class TimerViewModel: ObservableObject {
         }
     }
 
+    func latestActivityEndTime(on date: Date) -> Date? {
+        try? activityService.latestActivity(on: date)?.endTime
+    }
+
     func addManualActivity(state: ActivityEditorState) {
         do {
             _ = try activityService.addCompletedActivity(state: state)
@@ -255,6 +259,10 @@ final class TimerViewModel: ObservableObject {
             return referenceDate
         case .yesterday:
             return calendar.date(byAdding: .day, value: -1, to: referenceDate) ?? referenceDate
+        case .week:
+            var cal = calendar
+            cal.firstWeekday = 2
+            return cal.dateInterval(of: .weekOfYear, for: referenceDate)?.start ?? referenceDate
         case .specific(let date):
             return date
         case .from(let date):

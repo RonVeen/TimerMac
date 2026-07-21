@@ -3,6 +3,7 @@ import Foundation
 enum FilterChoice: CaseIterable {
     case today
     case yesterday
+    case week
     case date
     case from
     case range
@@ -12,6 +13,7 @@ enum FilterChoice: CaseIterable {
         switch self {
         case .today: return "Today"
         case .yesterday: return "Yesterday"
+        case .week: return "Week"
         case .date: return "Specific"
         case .from: return "From"
         case .range: return "Range"

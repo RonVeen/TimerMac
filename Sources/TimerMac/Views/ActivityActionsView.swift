@@ -8,6 +8,8 @@ struct ActivityActionsView: View {
     let onCopy: () -> Void
     let onExport: () -> Void
     let onGraph: () -> Void
+    @Binding var showGraphPopover: Bool
+    let graphSummaries: [ActivityGraphSummary]
 
     @State private var showDeleteConfirmation = false
 
@@ -60,6 +62,9 @@ struct ActivityActionsView: View {
                     .font(.title3)
             }
             .help("Show activity breakdown")
+            .popover(isPresented: $showGraphPopover) {
+                ActivityGraphPopover(summaries: graphSummaries)
+            }
 
             Button("Export CSV", action: onExport)
                 .disabled(viewModel.activities.isEmpty)

@@ -25,7 +25,7 @@ struct FilterHeaderView: View {
 
             HStack {
                 switch filterChoice {
-                case .today, .yesterday, .all:
+                case .today, .yesterday, .week, .all:
                     EmptyView()
                 case .date:
                     DatePicker("Date", selection: $specificDate, displayedComponents: .date)

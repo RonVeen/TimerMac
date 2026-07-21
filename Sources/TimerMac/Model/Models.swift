@@ -86,6 +86,7 @@ struct Job: Identifiable, Equatable {
 enum ActivityDateFilter: Hashable {
     case today
     case yesterday
+    case week
     case specific(Date)
     case from(Date)
     case range(Date, Date)
@@ -99,6 +100,15 @@ enum ActivityDateFilter: Hashable {
         case .yesterday:
             let yesterday = calendar.date(byAdding: .day, value: -1, to: Date()) ?? Date()
             return (yesterday.startOfDay(in: calendar), yesterday.endOfDay(in: calendar))
+        case .week:
+            var cal = calendar
+            cal.firstWeekday = 2 // Monday
+            guard let interval = cal.dateInterval(of: .weekOfYear, for: Date()) else {
+                let now = Date()
+                return (now.startOfDay(in: calendar), now.endOfDay(in: calendar))
+            }
+            let weekEnd = cal.date(byAdding: .second, value: -1, to: interval.end) ?? Date()
+            return (interval.start, weekEnd)
         case .specific(let date):
             return (date.startOfDay(in: calendar), date.endOfDay(in: calendar))
         case .from(let date):
@@ -116,6 +126,7 @@ enum ActivityDateFilter: Hashable {
         switch self {
         case .today: return "Today"
         case .yesterday: return "Yesterday"
+        case .week: return "This Week"
         case .specific(let date): return "On \(DateFormatters.date().string(from: date))"
         case .from(let date): return "From \(DateFormatters.date().string(from: date))"
         case .range(let start, let end):

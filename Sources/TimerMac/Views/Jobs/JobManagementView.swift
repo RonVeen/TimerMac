@@ -3,6 +3,7 @@ import SwiftUI
 struct JobManagementView: View {
     @ObservedObject var viewModel: TimerViewModel
     let startJob: (Job) -> Void
+    let addCompleted: (Job) -> Void
 
     @State private var newJobDescription: String = ""
     @State private var filterText: String = ""
@@ -61,6 +62,13 @@ struct JobManagementView: View {
                 Button("Start Job") {
                     if let job = selectedJob {
                         startJob(job)
+                    }
+                }
+                .disabled(selectedJob == nil)
+
+                Button("Add Completed") {
+                    if let job = selectedJob {
+                        addCompleted(job)
                     }
                 }
                 .disabled(selectedJob == nil)
