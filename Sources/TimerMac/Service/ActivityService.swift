@@ -94,6 +94,9 @@ final class ActivityService {
         case .week:
             let (from, to) = filter.bounds()
             return try fetchRange(from: from!, to: to!)
+        case .month:
+            let (from, to) = filter.bounds()
+            return try fetchRange(from: from!, to: to!)
         case .specific(let date):
             return try repository.findByDate(date)
         case .from(let date):

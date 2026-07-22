@@ -228,6 +228,8 @@ struct ContentView: View {
             viewModel.filter = .yesterday
         case .week:
             viewModel.filter = .week
+        case .month:
+            viewModel.filter = .month
         case .date:
             viewModel.filter = .specific(specificDate)
         case .from:

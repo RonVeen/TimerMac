@@ -263,6 +263,8 @@ final class TimerViewModel: ObservableObject {
             var cal = calendar
             cal.firstWeekday = 2
             return cal.dateInterval(of: .weekOfYear, for: referenceDate)?.start ?? referenceDate
+        case .month:
+            return calendar.dateInterval(of: .month, for: referenceDate)?.start ?? referenceDate
         case .specific(let date):
             return date
         case .from(let date):

@@ -87,6 +87,7 @@ enum ActivityDateFilter: Hashable {
     case today
     case yesterday
     case week
+    case month
     case specific(Date)
     case from(Date)
     case range(Date, Date)
@@ -109,6 +110,13 @@ enum ActivityDateFilter: Hashable {
             }
             let weekEnd = cal.date(byAdding: .second, value: -1, to: interval.end) ?? Date()
             return (interval.start, weekEnd)
+        case .month:
+            guard let interval = calendar.dateInterval(of: .month, for: Date()) else {
+                let now = Date()
+                return (now.startOfDay(in: calendar), now.endOfDay(in: calendar))
+            }
+            let monthEnd = calendar.date(byAdding: .second, value: -1, to: interval.end) ?? Date()
+            return (interval.start, monthEnd)
         case .specific(let date):
             return (date.startOfDay(in: calendar), date.endOfDay(in: calendar))
         case .from(let date):
@@ -127,6 +135,7 @@ enum ActivityDateFilter: Hashable {
         case .today: return "Today"
         case .yesterday: return "Yesterday"
         case .week: return "This Week"
+        case .month: return "This Month"
         case .specific(let date): return "On \(DateFormatters.date().string(from: date))"
         case .from(let date): return "From \(DateFormatters.date().string(from: date))"
         case .range(let start, let end):
