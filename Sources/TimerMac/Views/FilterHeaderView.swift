@@ -6,9 +6,11 @@ struct FilterHeaderView: View {
     @Binding var fromDate: Date
     @Binding var rangeStart: Date
     @Binding var rangeEnd: Date
+    @Binding var searchText: String
 
     var activeActivity: Activity?
     let onRefresh: () -> Void
+    let onSearch: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
@@ -40,9 +42,23 @@ struct FilterHeaderView: View {
                         .datePickerStyle(.compact)
                     DatePicker("End", selection: $rangeEnd, displayedComponents: .date)
                         .datePickerStyle(.compact)
+                case .search:
+                    GeometryReader { geo in
+                        HStack {
+                            Text("Search for")
+                            TextField("", text: $searchText)
+                                .frame(width: geo.size.width * 0.25)
+                            Button("Search", action: onSearch)
+                                .disabled(searchText.trimmed().count < 3)
+                            Spacer()
+                        }
+                    }
+                    .frame(height: 22)
                 }
-                Spacer()
-                Button("Refresh", action: onRefresh)
+                if filterChoice != .search {
+                    Spacer()
+                    Button("Refresh", action: onRefresh)
+                }
             }
         }
     }

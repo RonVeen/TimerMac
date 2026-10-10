@@ -59,4 +59,19 @@ final class ActivityServiceTests: XCTestCase {
         let trimmedActivity = try service.addCompletedActivity(state: state)
         XCTAssertEqual(trimmedActivity.description, "Trim Me")
     }
+
+    func testSearchFiltersByDescriptionCaseInsensitively() throws {
+        let (service, _) = makeService()
+        let start = Date()
+        _ = try service.startActivity(type: .develop, description: "Fix login BUG", startTime: start)
+        _ = try service.startActivity(type: .bug, description: "Unrelated task", startTime: start.addingTimeInterval(60))
+        _ = try service.startActivity(type: .develop, description: "Another bug fix", startTime: start.addingTimeInterval(120))
+
+        let results = try service.activities(filter: .search("bug"))
+
+        XCTAssertEqual(results.count, 2)
+        XCTAssertTrue(results.allSatisfy { $0.description.localizedCaseInsensitiveContains("bug") })
+        XCTAssertEqual(results.map(\.description), ["Another bug fix", "Fix login BUG"],
+                      "Results should be sorted by start time descending")
+    }
 }

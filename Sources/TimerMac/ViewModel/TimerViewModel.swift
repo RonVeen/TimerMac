@@ -56,6 +56,11 @@ final class TimerViewModel: ObservableObject {
         }
     }
 
+    func clearActivities() {
+        activities = []
+        selectedActivityID = nil
+    }
+
     func refreshJobs() {
         do {
             jobs = try jobService.listJobs().sorted { lhs, rhs in
@@ -272,6 +277,8 @@ final class TimerViewModel: ObservableObject {
         case .range(let start, _):
             return start
         case .all:
+            return referenceDate
+        case .search:
             return referenceDate
         }
     }

@@ -50,6 +50,13 @@ final class InMemoryActivityRepository: ActivityRepository {
         }
     }
 
+    func findByDescription(containing text: String, limit: Int) throws -> [Activity] {
+        Array(storage
+            .filter { $0.description.localizedCaseInsensitiveContains(text) }
+            .sorted { $0.startTime > $1.startTime }
+            .prefix(limit))
+    }
+
     func findLatestActivity(on date: Date) throws -> Activity? {
         let calendar = Calendar.current
         return storage

@@ -10,6 +10,7 @@ protocol ActivityRepository {
     func findByStatus(_ status: ActivityStatus) throws -> [Activity]
     func findByDateRange(from: Date, to: Date) throws -> [Activity]
     func findByDate(_ date: Date) throws -> [Activity]
+    func findByDescription(containing text: String, limit: Int) throws -> [Activity]
     func findLatestActivity(on date: Date) throws -> Activity?
     func updateStatus(current: ActivityStatus, newStatus: ActivityStatus, endTime: Date?) throws
 }
@@ -126,6 +127,14 @@ final class SQLiteActivityRepository: ActivityRepository {
         let sql = baseSelect + " WHERE DATE(start_time) = DATE(?) ORDER BY start_time ASC"
         return try fetchMultiple(sql: sql) { statement in
             bind(date: date, to: statement, index: 1)
+        }
+    }
+
+    func findByDescription(containing text: String, limit: Int) throws -> [Activity] {
+        let sql = baseSelect + " WHERE description LIKE ? ORDER BY start_time DESC LIMIT ?"
+        return try fetchMultiple(sql: sql) { statement in
+            bind(text: "%\(text)%", to: statement, index: 1)
+            sqlite3_bind_int(statement, 2, Int32(limit))
         }
     }
 

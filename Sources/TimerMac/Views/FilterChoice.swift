@@ -9,6 +9,7 @@ enum FilterChoice: CaseIterable {
     case from
     case range
     case all
+    case search
 
     var title: String {
         switch self {
@@ -20,6 +21,7 @@ enum FilterChoice: CaseIterable {
         case .from: return "From"
         case .range: return "Range"
         case .all: return "All"
+        case .search: return "Search"
         }
     }
 }

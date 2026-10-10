@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var fromDate = Date()
     @State private var rangeStart = Date()
     @State private var rangeEnd = Date()
+    @State private var searchText = ""
     @State private var exportDocument = CSVDocument(data: Data())
     @State private var isExporting = false
     @State private var showDeleteConfirmation = false
@@ -30,8 +31,10 @@ struct ContentView: View {
                              fromDate: $fromDate,
                              rangeStart: $rangeStart,
                              rangeEnd: $rangeEnd,
+                             searchText: $searchText,
                              activeActivity: viewModel.activeActivity,
-                             onRefresh: { viewModel.refreshActivities() })
+                             onRefresh: { viewModel.refreshActivities() },
+                             onSearch: performSearch)
             ActivityListView(activities: viewModel.activities,
                              selection: $viewModel.selectedActivityID,
                              onDoubleClick: { activity in
@@ -238,7 +241,17 @@ struct ContentView: View {
             viewModel.filter = .range(rangeStart, rangeEnd)
         case .all:
             viewModel.filter = .all
+        case .search:
+            viewModel.clearActivities()
+            return
         }
+        viewModel.refreshActivities()
+    }
+
+    private func performSearch() {
+        let trimmed = searchText.trimmed()
+        guard trimmed.count >= 3 else { return }
+        viewModel.filter = .search(trimmed)
         viewModel.refreshActivities()
     }
 

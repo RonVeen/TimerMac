@@ -104,6 +104,8 @@ final class ActivityService {
             return try fetchRange(from: from ?? date, to: to ?? Date())
         case .range(let start, let end):
             return try fetchRange(from: start, to: end)
+        case .search(let text):
+            return try repository.findByDescription(containing: text, limit: 500)
         }
     }
 

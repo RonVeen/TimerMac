@@ -92,6 +92,7 @@ enum ActivityDateFilter: Hashable {
     case from(Date)
     case range(Date, Date)
     case all
+    case search(String)
 
     func bounds(calendar: Calendar = .current) -> (Date?, Date?) {
         switch self {
@@ -127,6 +128,8 @@ enum ActivityDateFilter: Hashable {
             return (lower.startOfDay(in: calendar), upper.endOfDay(in: calendar))
         case .all:
             return (nil, nil)
+        case .search:
+            return (nil, nil)
         }
     }
 
@@ -141,6 +144,7 @@ enum ActivityDateFilter: Hashable {
         case .range(let start, let end):
             return "\(DateFormatters.date().string(from: start)) - \(DateFormatters.date().string(from: end))"
         case .all: return "All"
+        case .search(let text): return "Search: \"\(text)\""
         }
     }
 }
