@@ -5,10 +5,7 @@ enum FilterChoice: CaseIterable {
     case yesterday
     case week
     case month
-    case date
-    case from
-    case range
-    case all
+    case other
     case search
 
     var title: String {
@@ -17,11 +14,24 @@ enum FilterChoice: CaseIterable {
         case .yesterday: return "Yesterday"
         case .week: return "Week"
         case .month: return "Month"
-        case .date: return "Specific"
+        case .other: return "Other"
+        case .search: return "Search"
+        }
+    }
+}
+
+enum OtherFilterMode: CaseIterable, Hashable {
+    case specific
+    case from
+    case range
+    case all
+
+    var title: String {
+        switch self {
+        case .specific: return "Specific"
         case .from: return "From"
         case .range: return "Range"
         case .all: return "All"
-        case .search: return "Search"
         }
     }
 }

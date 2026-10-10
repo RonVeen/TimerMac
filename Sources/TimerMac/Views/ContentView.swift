@@ -17,6 +17,7 @@ struct ContentView: View {
     @State private var fromDate = Date()
     @State private var rangeStart = Date()
     @State private var rangeEnd = Date()
+    @State private var otherMode: OtherFilterMode = .specific
     @State private var searchText = ""
     @State private var exportDocument = CSVDocument(data: Data())
     @State private var isExporting = false
@@ -31,6 +32,7 @@ struct ContentView: View {
                              fromDate: $fromDate,
                              rangeStart: $rangeStart,
                              rangeEnd: $rangeEnd,
+                             otherMode: $otherMode,
                              searchText: $searchText,
                              activeActivity: viewModel.activeActivity,
                              onRefresh: { viewModel.refreshActivities() },
@@ -128,10 +130,11 @@ struct ContentView: View {
             applyFilterChoice()
         }
         .onChange(of: filterChoice) { _ in applyFilterChoice() }
-        .onChange(of: specificDate) { _ in if filterChoice == .date { applyFilterChoice() } }
-        .onChange(of: fromDate) { _ in if filterChoice == .from { applyFilterChoice() } }
-        .onChange(of: rangeStart) { _ in if filterChoice == .range { applyFilterChoice() } }
-        .onChange(of: rangeEnd) { _ in if filterChoice == .range { applyFilterChoice() } }
+        .onChange(of: specificDate) { _ in if filterChoice == .other && otherMode == .specific { applyFilterChoice() } }
+        .onChange(of: fromDate) { _ in if filterChoice == .other && otherMode == .from { applyFilterChoice() } }
+        .onChange(of: rangeStart) { _ in if filterChoice == .other && otherMode == .range { applyFilterChoice() } }
+        .onChange(of: rangeEnd) { _ in if filterChoice == .other && otherMode == .range { applyFilterChoice() } }
+        .onChange(of: otherMode) { _ in if filterChoice == .other { applyFilterChoice() } }
         .focusedValue(\.activityActions, ActivityActions(
             startActivity: { activeSheet = .start(description: "") },
             stopActivity: { viewModel.stopActivity() },
@@ -233,14 +236,17 @@ struct ContentView: View {
             viewModel.filter = .week
         case .month:
             viewModel.filter = .month
-        case .date:
-            viewModel.filter = .specific(specificDate)
-        case .from:
-            viewModel.filter = .from(fromDate)
-        case .range:
-            viewModel.filter = .range(rangeStart, rangeEnd)
-        case .all:
-            viewModel.filter = .all
+        case .other:
+            switch otherMode {
+            case .specific:
+                viewModel.filter = .specific(specificDate)
+            case .from:
+                viewModel.filter = .from(fromDate)
+            case .range:
+                viewModel.filter = .range(rangeStart, rangeEnd)
+            case .all:
+                viewModel.filter = .all
+            }
         case .search:
             viewModel.clearActivities()
             return

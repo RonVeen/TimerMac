@@ -6,6 +6,7 @@ struct FilterHeaderView: View {
     @Binding var fromDate: Date
     @Binding var rangeStart: Date
     @Binding var rangeEnd: Date
+    @Binding var otherMode: OtherFilterMode
     @Binding var searchText: String
 
     var activeActivity: Activity?
@@ -27,21 +28,33 @@ struct FilterHeaderView: View {
 
             HStack {
                 switch filterChoice {
-                case .today, .yesterday, .week, .month, .all:
+                case .today, .yesterday, .week, .month:
                     EmptyView()
-                case .date:
-                    DatePicker("Date", selection: $specificDate, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                        .frame(maxWidth: 250)
-                case .from:
-                    DatePicker("From", selection: $fromDate, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                        .frame(maxWidth: 250)
-                case .range:
-                    DatePicker("Start", selection: $rangeStart, displayedComponents: .date)
-                        .datePickerStyle(.compact)
-                    DatePicker("End", selection: $rangeEnd, displayedComponents: .date)
-                        .datePickerStyle(.compact)
+                case .other:
+                    Picker("", selection: $otherMode) {
+                        ForEach(OtherFilterMode.allCases, id: \.self) { mode in
+                            Text(mode.title).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                    .frame(width: 120)
+                    switch otherMode {
+                    case .specific:
+                        DatePicker("Date", selection: $specificDate, displayedComponents: .date)
+                            .datePickerStyle(.compact)
+                            .frame(maxWidth: 250)
+                    case .from:
+                        DatePicker("From", selection: $fromDate, displayedComponents: .date)
+                            .datePickerStyle(.compact)
+                            .frame(maxWidth: 250)
+                    case .range:
+                        DatePicker("Start", selection: $rangeStart, displayedComponents: .date)
+                            .datePickerStyle(.compact)
+                        DatePicker("End", selection: $rangeEnd, displayedComponents: .date)
+                            .datePickerStyle(.compact)
+                    case .all:
+                        EmptyView()
+                    }
                 case .search:
                     GeometryReader { geo in
                         HStack {
