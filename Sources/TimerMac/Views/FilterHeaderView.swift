@@ -15,16 +15,21 @@ struct FilterHeaderView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            HStack {
-                Picker("Filter", selection: $filterChoice) {
-                    ForEach(FilterChoice.allCases, id: \.self) { choice in
-                        Text(choice.title).tag(choice)
+            GeometryReader { geo in
+                HStack {
+                    Picker("Filter", selection: $filterChoice) {
+                        ForEach(FilterChoice.allCases, id: \.self) { choice in
+                            Text(choice.title).tag(choice)
+                        }
                     }
+                    .pickerStyle(.segmented)
+                    .frame(width: geo.size.width * 0.75, alignment: .leading)
+
+                    activeActivityBadge
+                        .frame(width: geo.size.width * 0.25, alignment: .leading)
                 }
-                .pickerStyle(.segmented)
-                Spacer()
-                activeActivityBadge
             }
+            .frame(height: 24)
 
             HStack {
                 switch filterChoice {
@@ -85,6 +90,8 @@ struct FilterHeaderView: View {
                     .frame(width: 8, height: 8)
                 Text("#\(active.id) \(active.description)")
                     .fontWeight(.medium)
+                    .lineLimit(1)
+                    .truncationMode(.tail)
             }
             .font(.subheadline)
             .padding(.horizontal, 10)
