@@ -76,6 +76,16 @@ struct Activity: Identifiable, Equatable {
         }
         return "\(minutes)m"
     }
+
+    var durationSeconds: TimeInterval {
+        guard let end = endTime ?? (isRunning ? Date() : nil) else { return 0 }
+        return end.timeIntervalSince(startTime)
+    }
+
+    /// Non-optional surrogate for sorting by End time; running activities sort as if they ended last.
+    var endTimeSortKey: Date {
+        endTime ?? .distantFuture
+    }
 }
 
 struct Job: Identifiable, Equatable {

@@ -7,35 +7,41 @@ struct ActivityListView: View {
     var onDoubleClick: ((Activity) -> Void)?
 
     @State private var tableSelection = Set<Int64>()
+    @State private var sortOrder: [KeyPathComparator<Activity>] =
+        [KeyPathComparator(\Activity.startTime, order: .forward)]
+
+    private var sortedActivities: [Activity] {
+        activities.sorted(using: sortOrder)
+    }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             if activities.isEmpty {
                 emptyState
             } else {
-                Table(activities, selection: $tableSelection) {
-                    TableColumn("ID") { activity in
+                Table(sortedActivities, selection: $tableSelection, sortOrder: $sortOrder) {
+                    TableColumn("ID", value: \.id) { activity in
                         Text(activity.id == 0 ? "-" : "\(activity.id)")
                             .fontWeight(activity.isRunning ? .bold : .regular)
                     }
                     .width(min: 30, ideal: 40, max: 50)
 
-                    TableColumn("Description") { activity in
+                    TableColumn("Description", value: \.description) { activity in
                         Text(activity.description)
                     }
                     .width(min: 150, ideal: 300)
 
-                    TableColumn("Date") { activity in
+                    TableColumn("Date", value: \.startTime) { activity in
                         Text(DateFormatters.date().string(from: activity.startTime))
                     }
                     .width(min: 80, ideal: 100, max: 120)
 
-                    TableColumn("Start") { activity in
+                    TableColumn("Start", value: \.startTime) { activity in
                         Text(DateFormatters.time().string(from: activity.startTime))
                     }
                     .width(min: 45, ideal: 55, max: 65)
 
-                    TableColumn("End") { activity in
+                    TableColumn("End", value: \.endTimeSortKey) { activity in
                         if let end = activity.endTime {
                             Text(DateFormatters.time().string(from: end))
                         } else {
@@ -45,17 +51,17 @@ struct ActivityListView: View {
                     }
                     .width(min: 45, ideal: 55, max: 65)
 
-                    TableColumn("Duration") { activity in
+                    TableColumn("Duration", value: \.durationSeconds) { activity in
                         Text(activity.durationText)
                     }
                     .width(min: 50, ideal: 65, max: 80)
 
-                    TableColumn("Type") { activity in
+                    TableColumn("Type", value: \.activityType.displayName) { activity in
                         Text(activity.activityType.displayName)
                     }
                     .width(min: 60, ideal: 80, max: 100)
 
-                    TableColumn("Status") { activity in
+                    TableColumn("Status", value: \.status.displayName) { activity in
                         Text(activity.status.displayName)
                     }
                     .width(min: 60, ideal: 80, max: 100)
