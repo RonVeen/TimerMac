@@ -185,7 +185,7 @@ struct ActivityEditorState {
                             type: activity.activityType,
                             startDate: activity.startTime,
                             endDate: activity.endTime ?? activity.startTime,
-                            includeEnd: true,
+                            includeEnd: activity.endTime != nil,
                             status: activity.status)
     }
 }
