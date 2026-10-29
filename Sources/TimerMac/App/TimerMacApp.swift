@@ -23,13 +23,22 @@ struct TimerMacApp: App {
     }
 
     var body: some Scene {
-        WindowGroup {
+        WindowGroup(id: "main") {
             ContentView(viewModel: viewModel)
                 .environmentObject(configuration)
         }
         .commands {
             ActionsCommands()
         }
+
+        MenuBarExtra {
+            MenuBarPopoverView(viewModel: viewModel)
+                .environmentObject(configuration)
+        } label: {
+            MenuBarLabelView(viewModel: viewModel)
+        }
+        .menuBarExtraStyle(.window)
+
         Settings {
             SettingsView(configuration: configuration)
                 .padding(24)
