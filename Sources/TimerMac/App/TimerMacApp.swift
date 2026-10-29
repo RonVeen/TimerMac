@@ -23,7 +23,7 @@ struct TimerMacApp: App {
     }
 
     var body: some Scene {
-        WindowGroup(id: "main") {
+        Window("TimerMac", id: "main") {
             ContentView(viewModel: viewModel)
                 .environmentObject(configuration)
         }
