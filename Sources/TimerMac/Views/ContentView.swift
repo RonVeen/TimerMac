@@ -189,7 +189,7 @@ struct ContentView: View {
         case .start(let description):
             StartActivityView(description: description,
                               type: configuration.defaultActivityType,
-                              startDate: configuration.defaultStartDate(for: Date())) { desc, type, startDate, connect in
+                              startDate: Date()) { desc, type, startDate, connect in
                 viewModel.startActivity(description: desc,
                                         type: type,
                                         startDate: startDate,
