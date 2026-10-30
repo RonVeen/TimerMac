@@ -13,8 +13,12 @@ struct ActivityEditorView: View {
                 }
             }
             DatePicker("Start", selection: $state.startDate, displayedComponents: [.date, .hourAndMinute])
-            Toggle("Has ended", isOn: $state.includeEnd)
-            if state.includeEnd {
+            if state.status == .active {
+                Toggle("Has ended", isOn: $state.includeEnd)
+                if state.includeEnd {
+                    DatePicker("End", selection: $state.endDate, displayedComponents: [.date, .hourAndMinute])
+                }
+            } else {
                 DatePicker("End", selection: $state.endDate, displayedComponents: [.date, .hourAndMinute])
             }
             if allowStatusChange {
